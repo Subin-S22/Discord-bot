@@ -35,7 +35,7 @@ const Home = () => {
 
   const getUserInfo = async () => {
     console.log("CLICLED");
-    const url = `https://discord.com/api/oauth2/authorize?client_id=984392646791397396&permissions=8&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F&response_type=code&scope=identify%20bot%20applications.commands`;
+    const url = `https://discord.com/api/oauth2/authorize?client_id=984392646791397396&permissions=0&redirect_uri=https%3A%2F%2Floquacious-druid-7782bd.netlify.app%2F&response_type=code&scope=identify%20bot%20applications.commands`;
     const res = await fetch(url)
       .then((resUrl) => resUrl.json())
       .catch((err) => {
