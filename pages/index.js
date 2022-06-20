@@ -1,8 +1,75 @@
 // import styles from "../utils/styles/home.module.scss";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useContext } from "react";
+import axios from "axios";
+import baseUrl from "../services/baseUrl";
+import { useRouter } from "next/router";
+import { Context } from "../store/context";
 
 const Home = () => {
+  const router = useRouter();
   const [value] = useState("");
+  const [accessToken, setAccessToken] = useState("");
+  const { userData, setUserData } = useContext(Context);
+
+  //get access token
+  const getAccessToken = useCallback(async (code) => {
+    try {
+      if (code) {
+        const res = await baseUrl.post("auth", { code: code });
+        setAccessToken(res.data.data.access_token);
+        // router.replace("/");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }, []);
+
+  //get user details
+  const getUser = useCallback(async () => {
+    try {
+      const res = await axios.get("https://discord.com/api/v10/users/@me", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      setUserData(res.data);
+      const discordId = res.data.id;
+      if (discordId) {
+        await addUserDetails(discordId);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, [accessToken, setUserData]);
+
+  //adding discord id and waller address
+  const addUserDetails = async (discordId) => {
+    const accounts = await klaytn.enable();
+    const account = accounts[0];
+    try {
+      const res = await baseUrl.post("user", {
+        discord_id: discordId,
+        wallet_address: account,
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  //user effect
+  useEffect(() => {
+    if (accessToken) {
+      getUser();
+    }
+  }, [accessToken, getUser]);
+
+  //token effect
+  useEffect(() => {
+    const query = window.location.search;
+    const code = query.split("=")[1];
+    console.log("access");
+    getAccessToken(code);
+  }, []);
 
   const connectWallet = async () => {
     try {
@@ -14,19 +81,21 @@ const Home = () => {
         const account = await accounts[0];
         console.log(accounts, klaytn);
         const request = new XMLHttpRequest();
-        request.open(
-          "POST",
-          "https://discord.com/api/webhooks/984697040757985311/wnwwu5z7pvZ-cMuBF1eaMxj3JmuHQSPe6e0drOZqqRaMDKyMthTHbQcKb__LDx7A-OwZ"
-        );
-        request.setRequestHeader("Content-type", "application/json");
-        //console.log(value)
-        const params = {
-          username: "Verify Bot",
-          avatar_url: "",
-          content: `${value} ${account}`,
-        };
-        request.send(JSON.stringify(params));
-        alert("Please return to Discord and check verification.");
+        if (userData) {
+          request.open(
+            "POST",
+            "https://discord.com/api/webhooks/984697040757985311/wnwwu5z7pvZ-cMuBF1eaMxj3JmuHQSPe6e0drOZqqRaMDKyMthTHbQcKb__LDx7A-OwZ"
+          );
+          request.setRequestHeader("Content-type", "application/json");
+          //console.log(value)
+          const params = {
+            username: "Verify Bot",
+            avatar_url: "",
+            content: `Please enter "!role to get NFT-Holder role"`,
+          };
+          request.send(JSON.stringify(params));
+          alert("Please return to Discord and check verification.");
+        }
       }
     } catch (e) {
       console.log(e);
@@ -82,6 +151,9 @@ const Home = () => {
         <br></br>
         <button onClick={connectWallet}>
           <span>Connect Wallet to verify.</span>
+        </button>
+        <button onClick={() => router.push("/connect")}>
+          <span>connect and verify.</span>
         </button>
       </div>
     </div>
