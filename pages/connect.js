@@ -1,11 +1,27 @@
 import React, { useEffect, useContext } from "react";
 import { Context } from "../store/context";
 import axios from "axios";
+import baseUrl from "../services/baseUrl";
 
 const Connect = () => {
   const { userData } = useContext(Context);
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    getBackend();
+  }, []);
+
+  const getBackend = async () => {
+    try {
+      const res = await baseUrl.get("/user");
+      if (res.data.userDetails[0].discord_id === userData.id) {
+        alert("You are already a NFT holder");
+        return;
+      }
+      await getNFTRole();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
 
   const connect = async () => {
     const { klaytn } = window;
@@ -36,6 +52,7 @@ const Connect = () => {
 
   const getNFTRole = async () => {
     try {
+      const request = new XMLHttpRequest();
       request.open(
         "POST",
         "https://discord.com/api/webhooks/986151798312169502/1GYuK1jrKyTj7ziyhVoyWzQcUgzYs4cw71jXsiYl007lDa0kVVfmcK8BZOR8h8ntedJ3"
@@ -45,7 +62,7 @@ const Connect = () => {
       const params = {
         username: "Verify Bot",
         avatar_url: "",
-        content: "You have been verified",
+        content: "You have been verified!",
       };
       request.send(JSON.stringify(params));
       alert("NFT-Holder role is assigned to you! Congrats");
