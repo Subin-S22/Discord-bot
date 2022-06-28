@@ -9,7 +9,7 @@ const Home = () => {
   const router = useRouter();
   const [value] = useState("");
   const [accessToken, setAccessToken] = useState("");
-  const { userData, setUserData } = useContext(Context);
+  const { userData, setUserData, setAddress } = useContext(Context);
 
   //get access token
   const getAccessToken = useCallback(async (code) => {
@@ -68,7 +68,9 @@ const Home = () => {
     const query = window.location.search;
     const code = query.split("=")[1];
     console.log("access");
-    getAccessToken(code);
+    if (code) {
+      getAccessToken(code);
+    }
   }, []);
 
   const connectWallet = async () => {
@@ -79,23 +81,23 @@ const Home = () => {
       } else {
         const accounts = await klaytn.enable();
         const account = await accounts[0];
-        console.log(accounts, klaytn);
-        const request = new XMLHttpRequest();
-        if (userData) {
-          request.open(
-            "POST",
-            "https://discord.com/api/webhooks/984697040757985311/wnwwu5z7pvZ-cMuBF1eaMxj3JmuHQSPe6e0drOZqqRaMDKyMthTHbQcKb__LDx7A-OwZ"
-          );
-          request.setRequestHeader("Content-type", "application/json");
-          //console.log(value)
-          const params = {
-            username: "Verify Bot",
-            avatar_url: "",
-            content: `Please enter "!role to get NFT-Holder role"`,
-          };
-          request.send(JSON.stringify(params));
-          alert("Please return to Discord and check verification.");
-        }
+        setAddress(account);
+        // const request = new XMLHttpRequest();
+        // if (userData) {
+        //   request.open(
+        //     "POST",
+        //     "https://discord.com/api/webhooks/984697040757985311/wnwwu5z7pvZ-cMuBF1eaMxj3JmuHQSPe6e0drOZqqRaMDKyMthTHbQcKb__LDx7A-OwZ"
+        //   );
+        //   request.setRequestHeader("Content-type", "application/json");
+        //   //console.log(value)
+        //   const params = {
+        //     username: "Verify Bot",
+        //     avatar_url: "",
+        //     content: `Please enter "!role to get NFT-Holder role"`,
+        //   };
+        //   request.send(JSON.stringify(params));
+        //   alert("Please return to Discord and check verification.");
+        // }
       }
     } catch (e) {
       console.log(e);
